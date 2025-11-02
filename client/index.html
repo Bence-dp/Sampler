@@ -1,0 +1,29 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>SAMPLER</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- type="module" is necessary if the main.js file is using import / export (aka ES/JS modules)
+     Try removing it and see what happens in the debug console! -->
+    <script src="js/main.js" type="module"></script>
+</head>
+
+<body>
+    <h1>Load a preset and play it !</H1>
+    <label for="presetSelect">Choose preset:</label>
+    <select id="presetSelect"></select>
+    <div class="sampler-container">
+        <div id="padGrid" class="pad-grid" aria-label="Sampler pads"></div>
+
+        <div class="visualizer">
+            <div class="wrapper">
+                <canvas id="myCanvas" width="600" height="120"></canvas>
+                <canvas id="myCanvasOverlay" width="600" height="120"></canvas>
+            </div>
+            <div style="margin-top:8px;">
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

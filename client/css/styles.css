@@ -1,0 +1,149 @@
+.wrapper {
+    position: relative;
+    width: 400px;
+    height: 300px;
+}
+body{
+  background-color: black;
+  color: white;
+}
+.wrapper canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+#myCanvas {
+  border: 1px solid white;
+  background-color:black;
+  z-index:0;
+}
+
+#myCanvasOverlay {
+  border:1px solid red;
+  position: absolute;
+  z-index:10;
+  
+}
+
+/* 4x4 pad grid for sampler */
+.pad-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 100px);
+  grid-template-rows: repeat(4, 100px);
+  gap: 10px;
+  margin-top: 16px;
+  background-color: black;
+
+
+}
+
+.pad {
+  width: 100px;
+  height: 100px;
+  background: #333333;
+  color: #fff;
+  border: 1px solid red;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.6);
+  transition: transform 0.1s ease, background 0.5s;
+  
+}
+
+.pad:active {
+  transform: translateY(2px);
+  background: #4CAF50;
+  
+}
+
+.pad.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.sampler-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-top: 20px;
+  
+}
+
+.visualizer {
+  min-width: 620px;
+}
+
+.wrapper {
+  position: relative;
+}
+
+#myCanvas {
+  border: 1px solid #333;
+  background: #000;
+}
+
+#myCanvasOverlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Simple preset select */
+.preset-select-wrapper {
+  display: inline-block;
+}
+
+#presetSelect {
+  background: #111;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid red;
+  font-size: 14px;
+  min-width: 200px;
+  cursor: pointer;
+}
+#presetSelect:hover{
+  border-color: white;
+  background: #222;
+
+}
+#presetSelect:focus {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+#presetSelect[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  #presetSelect { min-width: 100%; box-sizing: border-box; }
+}
+
+.preset-label {
+  display: block;
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 6px;
+}
+
+#presetSelect option {
+  background: #111; 
+  color: #fff;
+}
+
+#presetSelect option:hover {
+  background-color: #2b6cb0; 
+  color: #fff;
+}
+
+#presetSelect option:checked {
+  background-color: #1f4f8b;
+  color: #fff;
+}
