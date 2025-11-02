@@ -7,6 +7,10 @@ body{
   background-color: black;
   color: white;
 }
+label {
+  color: white;
+  font-size: 20px;
+}
 .wrapper canvas {
     position: absolute;
     top: 0;
@@ -14,12 +18,14 @@ body{
 }
 #myCanvas {
   border: 1px solid white;
+  margin-top: 16px;
   background-color:black;
   z-index:0;
 }
 
 #myCanvasOverlay {
   border:1px solid red;
+  margin-top: 16px;
   position: absolute;
   z-index:10;
   
@@ -28,8 +34,8 @@ body{
 /* 4x4 pad grid for sampler */
 .pad-grid {
   display: grid;
-  grid-template-columns: repeat(4, 100px);
-  grid-template-rows: repeat(4, 100px);
+  grid-template-columns: repeat(4, 120px);
+  grid-template-rows: repeat(4, 120px);
   gap: 10px;
   margin-top: 16px;
   background-color: black;
@@ -38,8 +44,9 @@ body{
 }
 
 .pad {
-  width: 100px;
-  height: 100px;
+  font-size: 20px;
+  width: 120px;
+  height: 120px;
   background: #333333;
   color: #fff;
   border: 1px solid red;
@@ -58,6 +65,7 @@ body{
 
 .pad:hover {
   background: #1d1d1d;
+  border: 2px solid white;
 }
 
 .pad:active {
@@ -76,7 +84,7 @@ body{
   gap: 20px;
   align-items: flex-start;
   margin-top: 20px;
-  
+  background-color: black;
 }
 
 .visualizer {
@@ -106,11 +114,11 @@ body{
 #presetSelect {
   background: #111;
   color: #fff;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 6px;
   border: 1px solid red;
-  font-size: 14px;
-  min-width: 200px;
+  font-size: 16px;
+  min-width: 160px;
   cursor: pointer;
 }
 #presetSelect:hover{
