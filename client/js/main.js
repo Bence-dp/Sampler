@@ -3,8 +3,7 @@
 // and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import
 // and https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/export
 
-// "named" imports from utils.js and soundutils.js
-import loadAndShow from './audioManager.js';
+import { Sampler } from './sampler.js';
 import { getSelectors } from './dom.js';
 import { initCanvas } from './canvasManager.js';
 
@@ -17,11 +16,9 @@ const fallbackSoundURLs = [
     'https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c9/Hi-Hat_Cerrado.ogg/Hi-Hat_Cerrado.ogg.mp3'
 ];
 
-let decodedSounds = [];
 let waveformDrawer, trimbarsDrawer;
 let canvas, canvasOverlay;
-let mousePos = { x: 0, y: 0 };
-let trimPositions = {}; 
+let trimPositions = {};
 let currentSelected = { index: -1, buf: null, name: null };
 
 window.onload = async function init() {
@@ -55,14 +52,6 @@ window.onload = async function init() {
         if (first.samples && first.samples.length > 0) {
             samples = first.samples.map(s => ({ url: `${apiBase}/presets/${s.url}`, name: s.name || s.url }));
         }
-
-        presetSelect.onchange = async (evt) => {
-            const index = parseInt(evt.target.value);
-            const p = presets[index];
-            let urls = fallbackSoundURLs;
-            if (p && p.samples && p.samples.length > 0) urls = p.samples.map(s => ({ url: `${apiBase}/presets/${s.url}`, name: s.name || s.url }));
-            await loadAndShow(urls, { ctx, padGrid, waveformDrawer, trimbarsDrawer, canvas, trimPositions, currentSelected });
-        };
     }
 
     canvas = els.canvas;
@@ -73,7 +62,7 @@ window.onload = async function init() {
     trimbarsDrawer = canvasMgr.trimbarsDrawer;
 
     canvasMgr.setupMouseHandlers({
-        onMove: (mp) => { },
+        onMove: () => {},
         onUp: () => {
             if (currentSelected.index >= 0) {
                 trimPositions[currentSelected.index] = {
@@ -84,9 +73,18 @@ window.onload = async function init() {
         }
     });
 
-
     canvasMgr.startAnimation();
 
-    await loadAndShow(samples, { ctx, padGrid, waveformDrawer, trimbarsDrawer, canvas, trimPositions, currentSelected, canvasMgr });
+    const sampler = new Sampler({ ctx, padGrid, waveformDrawer, trimbarsDrawer, canvas, trimPositions, currentSelected, canvasMgr });
+
+    presetSelect.onchange = async (evt) => {
+        const index = parseInt(evt.target.value);
+        const p = presets[index];
+        let urls = fallbackSoundURLs;
+        if (p && p.samples && p.samples.length > 0) urls = p.samples.map(s => ({ url: `${apiBase}/presets/${s.url}`, name: s.name || s.url }));
+        await sampler.loadAndShow(urls);
+    };
+
+    await sampler.loadAndShow(samples);
 };
 

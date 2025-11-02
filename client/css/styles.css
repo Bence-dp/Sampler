@@ -54,6 +54,12 @@ body{
   
 }
 
+/* mouse on pad */
+
+.pad:hover {
+  background: #1d1d1d;
+}
+
 .pad:active {
   transform: translateY(2px);
   background: #4CAF50;
