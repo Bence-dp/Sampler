@@ -6,7 +6,8 @@
 import { Sampler } from './sampler.js';
 import { getSelectors } from './dom.js';
 import { initCanvas } from './canvasManager.js';
-
+import Recorder from './recorder.js';
+/* import recorder.js */
 // The AudioContext object is the main "entry point" into the Web Audio API
 let ctx;
 
@@ -20,10 +21,12 @@ let waveformDrawer, trimbarsDrawer;
 let canvas, canvasOverlay;
 let trimPositions = {};
 let currentSelected = { index: -1, buf: null, name: null };
+let recorder;
 
 window.onload = async function init() {
     ctx = new AudioContext();
-
+    recorder = new Recorder(ctx);
+    await recorder.init();
     const apiBase = 'http://localhost:3000';
 
     let presets = null;
