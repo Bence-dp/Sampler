@@ -1,5 +1,6 @@
+import WaveformDrawer from './waveformdrawer.js';
+
 export default class Recorder {
-	
 	constructor(options = {}) {
 		this.recordButton = null;
 		this.stopButton = null;
@@ -13,17 +14,35 @@ export default class Recorder {
 		this.lastSample = null;
 		this.bufferSourceNode = null;
 
-		this.ac = options.audioContext || new AudioContext();
+		if (options && typeof options.currentTime === 'number') {
+			this.ac = options; 
+		} else {
+			this.ac = (options && options.audioContext) || new AudioContext();
+		}
+
 		this.limiter = this.ac.createDynamicsCompressor();
 		this.limiter.connect(this.ac.destination);
 
-		this.selectors = options.selectors || {
+		// base URL for API (upload / presets). Can be remote server.
+		this.apiBase = (options && options.apiBase) || 'http://localhost:3000';
+
+		this.canvasMgr = (options && options.canvasMgr) || null;
+
+		this.selectors = (options && options.selectors) || {
 			canvas: 'recordVisualizer',
 			record: 'record',
 			stop: 'stop',
 			play: 'play',
 			send: 'send',
 			progress: 'progress'
+		};
+
+		// playhead state for recorder canvas
+		this._playhead = {
+			active: false,
+			startedAt: 0,
+			duration: 0,
+			reqId: null
 		};
 	}
 
@@ -91,14 +110,9 @@ export default class Recorder {
 
 		this.stopSample();
 
-		this.bufferSourceNode = this.ac.createBufferSource();
-		this.bufferSourceNode.buffer = sample;
-		this.bufferSourceNode.connect(this.limiter);
-		this.bufferSourceNode.loop = false;
-		this.bufferSourceNode.start();
+		this._disableButtons(false, true, false, false);
 
-		this.bufferSourceNode.onended = () => this._disableButtons(false, true, false, false);
-		this._renderWave(this.canvas, sample.getChannelData(0));
+		this._renderWave(this.canvas, sample);
 	}
 
 	playSample() {
@@ -111,8 +125,17 @@ export default class Recorder {
 		this.bufferSourceNode.loop = false;
 		this.bufferSourceNode.start();
 
+		const startedAt = this.ac.currentTime;
+		const playDuration = this.lastSample.duration || (this.lastSample.length / this.lastSample.sampleRate);
+		if (this.canvas) {
+			this._startPlayhead(startedAt, playDuration);
+		}
+
 		this._disableButtons(true, true, true, true);
-		this.bufferSourceNode.onended = () => this._disableButtons(false, true, false, false);
+		this.bufferSourceNode.onended = () => {
+			this._disableButtons(false, true, false, false);
+			this._stopPlayhead();
+		};
 	}
 
 	stopSample() {
@@ -120,6 +143,67 @@ export default class Recorder {
 			try { this.bufferSourceNode.stop(); } catch (e) { }
 			try { this.bufferSourceNode.disconnect(); } catch (e) { }
 			this.bufferSourceNode = null;
+		}
+		this._stopPlayhead();
+	}
+
+	_startPlayhead(startedAt, duration) {
+		this._playhead.active = true;
+		this._playhead.startedAt = startedAt;
+		this._playhead.duration = duration;
+		const canvas = this.canvas;
+		const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
+
+		const draw = () => {
+			if (!this._playhead.active || !ctx) return;
+			const now = this.ac.currentTime;
+			const elapsed = now - this._playhead.startedAt;
+			const t = this._playhead.duration > 0 ? (elapsed / this._playhead.duration) : 1;
+			let x = Math.min(Math.max(0, t), 1) * canvas.width;
+
+
+			ctx.save();
+
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			try {
+				const drawer = new WaveformDrawer();
+				drawer.init(this.lastSample, canvas, '#83E83E');
+				drawer.drawWave(0, canvas.height);
+			} catch (e) { /* if waveform draw fails, continue */ }
+
+			ctx.strokeStyle = 'red';
+			ctx.lineWidth = 2;
+			ctx.beginPath();
+			ctx.moveTo(x, 0);
+			ctx.lineTo(x, canvas.height);
+			ctx.stroke();
+			ctx.restore();
+
+			if (t < 1) {
+				this._playhead.reqId = requestAnimationFrame(draw);
+			} else {
+				this._playhead.active = false;
+			}
+		};
+
+		if (this._playhead.reqId) cancelAnimationFrame(this._playhead.reqId);
+		this._playhead.reqId = requestAnimationFrame(draw);
+	}
+
+	_stopPlayhead() {
+		this._playhead.active = false;
+		if (this._playhead.reqId) {
+			cancelAnimationFrame(this._playhead.reqId);
+			this._playhead.reqId = null;
+		}
+		if (this.canvas && this.lastSample) {
+			try {
+				const ctx = this.canvas.getContext('2d');
+				ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+				const drawer = new WaveformDrawer();
+				drawer.init(this.lastSample, this.canvas, '#83E83E');
+				drawer.drawWave(0, this.canvas.height);
+			} catch (e) { }
 		}
 	}
 
@@ -129,23 +213,73 @@ export default class Recorder {
 			return;
 		}
 
-		const name = prompt('Nom du sample à envoyer :');
-		if (!name) {
-			alert('Envoi annulé.');
-			return;
-		}
+		const folder = prompt('Dossier sur le serveur (ex: recordings) :') || 'recordings';
+		// Use the folder name as the preset name so the JSON file matches the folder
+		const presetName = folder;
+		const sampleBaseName = prompt('Nom du sample (sans extension) :') || 'recording';
+		const mime = this.lastBlob.type || 'audio/webm';
+		const extMatch = mime.match(/audio\/(.+)/);
+		const ext = extMatch ? extMatch[1].replace(/[^a-z0-9]/gi, '') : 'webm';
+		const filename = `${sampleBaseName.replace(/[^a-z0-9-_]/gi, '_')}-${Date.now()}.${ext}`;
 
 		this.progressBar.style.display = 'block';
 		this.progressBar.value = 0;
 
+		const form = new FormData();
+		form.append('files', this.lastBlob, filename);
+		// ask server to create the preset JSON with the folder name
+		form.append('presetName', presetName);
+
+		const uploadUrl = `${this.apiBase.replace(/\/$/, '')}/api/upload/${encodeURIComponent(folder)}`;
+
 		try {
-			await this._uploadWithProgress('https://myserver.com/api/samples', this.lastBlob, name);
+			const sendForm = (formData) => new Promise((resolve, reject) => {
+				const xhr = new XMLHttpRequest();
+				xhr.open('POST', uploadUrl, true);
+
+				xhr.upload.onprogress = (e) => {
+					if (e.lengthComputable && this.progressBar) {
+						this.progressBar.value = (e.loaded / e.total) * 100;
+					}
+				};
+
+				xhr.onload = () => {
+					let parsed = null;
+					try { parsed = JSON.parse(xhr.responseText); } catch (e) { parsed = { raw: xhr.responseText }; }
+					resolve({ status: xhr.status, body: parsed });
+				};
+
+				xhr.onerror = () => reject(new Error('Network error during upload'));
+				xhr.send(formData);
+			});
+
+			let uploadResp = await sendForm(form);
+
+			if (uploadResp && uploadResp.status === 409) {
+				const ok = confirm('Le preset existe déjà. Voulez-vous l\u00e9craser ?');
+				if (!ok) {
+					this.progressBar.style.display = 'none';
+					alert('Envoi annulé.');
+					return;
+				}
+				form.append('overwrite', 'true');
+				uploadResp = await sendForm(form);
+			}
+
 			this.progressBar.style.display = 'none';
-			alert('✅ Sample envoyé avec succès !');
+
+			if (uploadResp && uploadResp.preset) {
+				alert('Enregistrement envoyé et preset créé: ' + (uploadResp.preset.name || uploadResp.preset.slug || 'ok'));
+				return uploadResp.preset;
+			}
+
+			alert('Upload réussi : ' + (uploadResp.files && uploadResp.files[0] && uploadResp.files[0].url ? uploadResp.files[0].url : 'ok'));
+			return uploadResp;
 		} catch (err) {
 			this.progressBar.style.display = 'none';
-			console.error('Upload error:', err);
+			console.error('Upload/creation error:', err);
 			alert('Erreur pendant l’envoi : ' + err.message);
+			throw err;
 		}
 	}
 
@@ -174,29 +308,18 @@ export default class Recorder {
 		});
 	}
 
-	_renderWave(canvas, data) {
-		if (!canvas) return;
-		const ctx = canvas.getContext('2d');
-		const w = canvas.width;
-		const h = canvas.height;
-		const mid = h / 2;
+	_renderWave(canvas, decodedAudioBuffer) {
+		if (!canvas || !decodedAudioBuffer) return;
 
-		ctx.fillStyle = '#000000ff';
-		ctx.fillRect(0, 0, w, h);
-
-		ctx.strokeStyle = '#4CAF50';
-		ctx.lineWidth = 1;
-		ctx.beginPath();
-
-		const step = w / data.length;
-		let x = 0;
-		for (let i = 0; i < data.length; i++) {
-			const y = mid - data[i] * mid;
-			i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-			x += step;
+		try {
+			const drawer = new WaveformDrawer();
+			drawer.init(decodedAudioBuffer, canvas, '#83E83E');
+			const ctx = canvas.getContext('2d');
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			drawer.drawWave(0, canvas.height);
+		} catch (err) {
+			console.error('Waveform draw failed:', err);
 		}
-
-		ctx.stroke();
 	}
 
 	_maximizeSampleInPlace(sample) {

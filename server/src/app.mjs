@@ -174,26 +174,93 @@ app.post("/api/presets", async (req, res, next) => {
 // etc.
 // To do that, we will need to modify later both this code and the front-end code
 // We will see that in the next session
-app.post("/api/upload/:folder", upload.array("files", 16), (req, res) => {
-  // All files are in req.files
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ error: "No files were uploaded." });
+app.post("/api/upload/:folder", upload.array("files", 16), async (req, res, next) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "No files were uploaded." });
+    }
+
+    const destinationFolder = req.params.folder || "";
+    console.log(`Uploaded ${req.files.length} files to folder: ${destinationFolder}`);
+
+    const fileInfos = req.files.map((file) => ({
+      originalName: file.originalname,
+      storedName: file.filename,
+      size: file.size,
+      url: `/presets/${req.params.folder}/${file.filename}`
+    }));
+
+    // If client requested preset creation, create JSON here
+    const presetName = req.body && req.body.presetName ? String(req.body.presetName).trim() : null;
+
+    if (presetName) {
+      // Build samples array for the preset
+      const samples = fileInfos.map(f => ({
+        url: `./${req.params.folder}/${f.storedName}`,
+        name: path.parse(f.storedName).name
+      }));
+
+      const preset = {
+        name: presetName,
+        type: 'Recording',
+        isFactoryPresets: false,
+        samples
+      };
+
+      const errs = validatePreset(preset);
+      if (errs.length) {
+        return res.status(400).json({ uploaded: fileInfos.length, files: fileInfos, presetErrors: errs });
+      }
+
+      const presetPath = safePresetPath(preset.name);
+        const overwrite = req.body && (req.body.overwrite === '1' || String(req.body.overwrite).toLowerCase() === 'true');
+
+        if (await fileExists(presetPath) && !overwrite) {
+          // Merge: append new samples to existing preset JSON instead of overwriting
+          const now = new Date().toISOString();
+          const current = await readJSON(presetPath).catch(() => ({}));
+
+          // existing samples (ensure array)
+          const existingSamples = Array.isArray(current.samples) ? current.samples.slice() : [];
+
+          // new samples from upload
+          const newSamples = fileInfos.map(f => ({ url: `./${req.params.folder}/${f.storedName}`, name: path.parse(f.storedName).name }));
+
+          // filter out duplicates by url or name
+          const toAdd = newSamples.filter(ns => !existingSamples.some(es => es.url === ns.url || es.name === ns.name));
+
+          const merged = {
+            id: current.id || crypto.randomUUID(),
+            slug: slugify(current.name || preset.name),
+            updatedAt: now,
+            name: current.name || preset.name,
+            type: current.type || preset.type,
+            isFactoryPresets: current.isFactoryPresets || preset.isFactoryPresets,
+            samples: existingSamples.concat(toAdd)
+          };
+
+          const errs = validatePreset(merged);
+          if (errs.length) {
+            return res.status(400).json({ uploaded: fileInfos.length, files: fileInfos, presetErrors: errs });
+          }
+
+          await writeJSON(presetPath, merged);
+          return res.status(200).json({ uploaded: fileInfos.length, files: fileInfos, preset: merged, appended: toAdd.length });
+        }
+
+        // either file doesn't exist or overwrite requested => write/overwrite
+        const now = new Date().toISOString();
+        const withMeta = { id: crypto.randomUUID(), slug: slugify(preset.name), updatedAt: now, ...preset, name: preset.name };
+        await writeJSON(presetPath, withMeta);
+
+        return res.status(201).json({ uploaded: fileInfos.length, files: fileInfos, preset: withMeta, overwritten: overwrite });
+    }
+
+    // default response when no preset creation requested
+    res.status(201).json({ uploaded: fileInfos.length, files: fileInfos });
+  } catch (err) {
+    next(err);
   }
-
-  const destinationFolder = req.params.folder || "";
-  console.log(`Uploaded ${req.files.length} files to folder: ${destinationFolder}`);
-  
-  // Prepare response with file information
-  const fileInfos = req.files.map((file) => ({
-    originalName: file.originalname,
-    storedName: file.filename,
-    size: file.size,
-    url: `/presets/${req.params.folder}/${file.filename}`
-  }));
-
-  // with the current multer setup, files are already saved in the correct folder
-  // so we just return the file information
-  res.status(201).json({ uploaded: fileInfos.length, files: fileInfos });
 });
 
 // PUT for replacing or renaming a preset file completely

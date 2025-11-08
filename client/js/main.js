@@ -25,8 +25,6 @@ let recorder;
 
 window.onload = async function init() {
     ctx = new AudioContext();
-    recorder = new Recorder(ctx);
-    await recorder.init();
     const apiBase = 'http://localhost:3000';
 
     let presets = null;
@@ -77,6 +75,11 @@ window.onload = async function init() {
     });
 
     canvasMgr.startAnimation();
+
+    // create recorder after canvas manager so it can receive canvasMgr for playhead
+    // pass `apiBase` so Recorder uploads to the correct server (can be remote)
+    recorder = new Recorder({ audioContext: ctx, canvasMgr, canvas, apiBase });
+    await recorder.init();
 
     const sampler = new Sampler({ ctx, padGrid, waveformDrawer, trimbarsDrawer, canvas, trimPositions, currentSelected, canvasMgr });
 
