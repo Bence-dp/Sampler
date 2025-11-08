@@ -2,6 +2,7 @@ body{
   background-color: black;
   color: white;
 }
+
 label {
   color: white;
   font-size: 20px;
@@ -11,6 +12,7 @@ label {
     top: 0;
     left: 0;
 }
+
 #myCanvas {
   border: 1px solid white;
   margin-top: 16px;
@@ -34,8 +36,6 @@ label {
   gap: 10px;
   margin-top: 16px;
   background-color: black;
-
-
 }
 
 .pad {
@@ -53,10 +53,7 @@ label {
   user-select: none;
   box-shadow: 0 2px 0 rgba(0,0,0,0.6);
   transition: transform 0.1s ease, background 0.5s;
-  
 }
-
-/* mouse on pad */
 
 .pad:hover {
   background: #1d1d1d;
@@ -65,13 +62,22 @@ label {
 
 .pad:active {
   transform: translateY(2px);
-  background: #4CAF50;
-  
+  background: #4CAF50; 
 }
 
 .pad.disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+.pad.disabled:hover{
+  background: #333333;
+  border: 1px solid red;
+}
+
+.pad.disabled:active{
+  transform: translateY(0px);
+  background: #333333;
 }
 
 .sampler-container {
@@ -189,11 +195,22 @@ button:hover{
   border: 2px solid white;
 }
 
+button:active{
+  transform: translateY(2px);
+  background: #4CAF50;
+}
+
 button:disabled{
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
-button:active{
-  transform: translateY(4px);
- 
+button:disabled:hover{
+  background: #333333;
+  border: 1px solid red;
+}
+
+button:disabled:active{
+  transform: translateY(0px);
+  background: #333333;
 }
