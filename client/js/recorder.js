@@ -1,4 +1,5 @@
 export default class Recorder {
+	
 	constructor(options = {}) {
 		this.recordButton = null;
 		this.stopButton = null;

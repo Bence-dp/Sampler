@@ -1,4 +1,5 @@
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <title>SAMPLER</title>
@@ -12,6 +13,7 @@
     <h1>Load a preset and play it !</H1>
     <label for="presetSelect">Choose preset:</label>
     <select id="presetSelect"></select>
+
     <div class="sampler-container">
         <div id="padGrid" class="pad-grid" aria-label="Sampler pads"></div>
 
@@ -20,20 +22,21 @@
                 <canvas id="myCanvas" width="600" height="120"></canvas>
                 <canvas id="myCanvasOverlay" width="600" height="120"></canvas>
             </div>
-            <div style="margin-top:8px;">
-            </div>
-        </div class= "recorder-container">
+
+            <div style="margin-top:8px;"></div>
+
+            <div class="recorder-container"></div>
+
             <div style="margin-bottom:10px;">
                 <button id="record">🎙️ Record</button>
                 <button id="stop">⏹️ Stop</button>
                 <button id="play">▶️ Play</button>
                 <button id="send">📤 Send to Server</button>
-
                 <progress id="progress" value="0" max="100" style="width:400px; display:none;"></progress>
-
-                <canvas id="recordVisualizer" ></canvas>
+                <canvas id="recordVisualizer"></canvas>
             </div>
         </div>
+
     </div>
 </body>
 
