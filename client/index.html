@@ -10,33 +10,35 @@
 </head>
 
 <body>
-    <h1>Load a preset and play it !</H1>
-    <label for="presetSelect">Choose preset:</label>
-    <select id="presetSelect"></select>
-
+    
     <div class="sampler-container">
-        <div id="padGrid" class="pad-grid" aria-label="Sampler pads"></div>
-
+        <h1>Load a preset and play it !</h1>
+        <div>
+            <label for="presetSelect">Choose preset: </label>
+            <select id="presetSelect"></select>
+        </div>
+        <br><br>
         <div class="visualizer">
             <div class="wrapper">
-                <canvas id="myCanvas" width="600" height="120"></canvas>
-                <canvas id="myCanvasOverlay" width="600" height="120"></canvas>
-            </div>
-
-            <div style="margin-top:8px;"></div>
-
-            <div class="recorder-container"></div>
-
-            <div style="margin-bottom:10px;">
-                <button id="record">🎙️ Record</button>
-                <button id="stop">⏹️ Stop</button>
-                <button id="play">▶️ Play</button>
-                <button id="send">📤 Send to Server</button>
-                <progress id="progress" value="0" max="100" style="width:400px; display:none;"></progress>
-                <canvas id="recordVisualizer"></canvas>
+                <canvas id="myCanvas" width="620" height="120"></canvas>
+                <canvas id="myCanvasOverlay" width="620" height="120"></canvas>
             </div>
         </div>
+        <div id="padGrid" class="pad-grid" aria-label="Sampler pads"></div>
+    </div>
 
+            <!-- <div style="margin-top:8px;"></div> -->
+
+    <div class="recorder-container">
+        <h1>Record audio yourself</h1>
+        <div>
+            <button id="record">🎙️ Record</button>
+            <button id="stop">⏹️ Stop</button>
+            <button id="play">▶️ Play</button>
+            <button id="send">📤 Send to Server</button>
+        </div>
+        <progress id="progress" value="0" max="100" style="width:400px; display:none;"></progress>
+        <canvas id="recordVisualizer"></canvas>
     </div>
 </body>
 

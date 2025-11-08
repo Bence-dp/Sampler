@@ -34,7 +34,6 @@ label {
   grid-template-columns: repeat(4, 120px);
   grid-template-rows: repeat(4, 120px);
   gap: 10px;
-  margin-top: 16px;
   background-color: black;
 }
 
@@ -82,9 +81,9 @@ label {
 
 .sampler-container {
   display: flex;
-  gap: 20px;
-  align-items: flex-start;
-  margin-top: 20px;
+  flex-direction: column;
+  align-items: center;
+  /* margin-top: 60px; */
   background-color: black;
 }
 
@@ -177,7 +176,11 @@ label {
 }
 
 .recorder-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-top: 60px;
+  background-color: black;
 }
 
 button{
