@@ -119,6 +119,7 @@ html, body {
   border-radius: 6px;
   display: flex;
   align-items: center;
+  text-align: center; 
   justify-content: center;
   cursor: pointer;
   user-select: none;
@@ -304,7 +305,7 @@ html, body {
     order: 1;
     justify-content: start;
   }
-
+  
   .visualizer {
     order: 2;
     flex: 0 0 var(--visualizer-max);

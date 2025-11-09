@@ -48,11 +48,11 @@ function makePadClickHandler(info, deps) {
         if (canvasMgr && res) {
             const startX = trimbarsDrawer.leftTrimBar.x;
             const endX = trimbarsDrawer.rightTrimBar.x;
-            canvasMgr.startPlayhead(startX, endX, res.startedAt, res.playDuration);
+            const token = canvasMgr.startPlayhead(startX, endX, res.startedAt, res.playDuration);
 
             if (res.bufferSource && typeof res.bufferSource.onended !== 'undefined') {
                 res.bufferSource.onended = () => {
-                    try { canvasMgr.stopPlayhead(); } catch (e) { /* ignore */ }
+                    try { canvasMgr.stopPlayheadIfToken(token); } catch (e) { /* ignore */ }
                 };
             }
         }

@@ -67,9 +67,9 @@ class Sampler {
             if (this.canvasMgr && res) {
                 const startX = this.trimbarsDrawer.leftTrimBar.x;
                 const endX = this.trimbarsDrawer.rightTrimBar.x;
-                this.canvasMgr.startPlayhead(startX, endX, res.startedAt, res.playDuration);
+                const token = this.canvasMgr.startPlayhead(startX, endX, res.startedAt, res.playDuration);
                 if (res.bufferSource && typeof res.bufferSource.onended !== 'undefined') {
-                    res.bufferSource.onended = () => { try { this.canvasMgr.stopPlayhead(); } catch (e) { } };
+                    res.bufferSource.onended = () => { try { this.canvasMgr.stopPlayheadIfToken(token); } catch (e) { } };
                 }
             }
         };

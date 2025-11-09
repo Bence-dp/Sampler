@@ -20,7 +20,11 @@ export function createPadElement(info, onClick) {
         pad.textContent = '';
     } else {
         const label = info.name || `#${info.sampleIndex+1}`;
-        pad.textContent = label.length > 12 ? label.slice(0, 11) + '…' : label;
+        const span = document.createElement('span');
+        span.className = 'pad-label';
+        pad.textContent = label.length > 20 ? label.slice(0, 19) + '…' : label;  
+        pad.appendChild(span);
+        pad.title = label;                
         pad.onclick = onClick;
     }
     return pad;

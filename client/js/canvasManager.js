@@ -54,8 +54,12 @@ export function initCanvas(canvas, canvasOverlay, audioCtx) {
         startX: 0,
         endX: canvas.width,
         startedAt: 0,
-        duration: 0
+        duration: 0,
+        token: 0
     };
+
+    // token generator for playhead instances
+    let _nextPlayheadToken = 1;
 
     function animate() {
         if (trimbarsDrawer) {
@@ -120,16 +124,35 @@ export function initCanvas(canvas, canvasOverlay, audioCtx) {
     }
 
     function startPlayhead(startX, endX, startedAt, duration) {
+        // immediately stop previous playhead and clear overlay
+        stopPlayhead();
+
         playhead.active = true;
         playhead.startX = startX;
         playhead.endX = endX;
         playhead.startedAt = startedAt;
         playhead.duration = duration;
+        playhead.token = _nextPlayheadToken++;
+        return playhead.token;
     }
 
     function stopPlayhead() {
         playhead.active = false;
+        try {
+            const ctxOv = canvasOverlay.getContext('2d');
+            ctxOv && ctxOv.clearRect(0, 0, canvasOverlay.width, canvasOverlay.height);
+        } catch (e) { /* ignore */ }
     }
 
-    return { waveformDrawer, trimbarsDrawer, mousePos, setupMouseHandlers, startAnimation, startPlayhead, stopPlayhead };
+    function stopPlayheadIfToken(token) {
+        if (typeof token === 'undefined') {
+            stopPlayhead();
+            return;
+        }
+        if (playhead.token === token) {
+            stopPlayhead();
+        }
+    }
+
+    return { waveformDrawer, trimbarsDrawer, mousePos, setupMouseHandlers, startAnimation, startPlayhead, stopPlayhead, stopPlayheadIfToken };
 }
