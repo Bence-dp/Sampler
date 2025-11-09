@@ -283,6 +283,9 @@ html, body {
 #recorderContainer button:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+  transform: translateY(0px);
+  border: 1px solid var(--accent);
+  background: #000;
 }
 
 /* RESPONSIVE RULES */
