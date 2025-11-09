@@ -4,7 +4,48 @@ import TrimbarsDrawer from './trimbarsdrawer.js';
 //initialise les dessins sur le canvas et gere les evenements de la souris
 export function initCanvas(canvas, canvasOverlay, audioCtx) {
     const waveformDrawer = new WaveformDrawer();
-    const trimbarsDrawer = new TrimbarsDrawer(canvasOverlay, 0, canvas.width);
+    // ensure canvas pixel buffer matches displayed size so mouse coords map correctly
+    let currentWidth = 0;
+    let currentHeight = 0;
+    let trimbarsDrawer = null;
+
+    function setSizeAndSync() {
+        const w = Math.max(1, Math.floor(canvas.clientWidth));
+        const h = Math.max(1, Math.floor(canvas.clientHeight));
+        if (w === currentWidth && h === currentHeight) return;
+
+        // compute scale to preserve trim positions when resizing
+        const scaleX = currentWidth ? (w / currentWidth) : 1;
+
+        // update internal pixel buffer size
+        canvas.width = w;
+        canvas.height = h;
+        canvasOverlay.width = w;
+        canvasOverlay.height = h;
+
+        // if we already had trim bars, scale their positions
+        if (trimbarsDrawer) {
+            trimbarsDrawer.leftTrimBar.x = Math.round(trimbarsDrawer.leftTrimBar.x * scaleX);
+            trimbarsDrawer.rightTrimBar.x = Math.round(trimbarsDrawer.rightTrimBar.x * scaleX);
+            trimbarsDrawer.canvas = canvasOverlay;
+            trimbarsDrawer.ctx = canvasOverlay.getContext('2d');
+        } else {
+            trimbarsDrawer = new TrimbarsDrawer(canvasOverlay, 0, w);
+        }
+
+        currentWidth = w;
+        currentHeight = h;
+    }
+
+    // initial sizing
+    setSizeAndSync();
+
+    // update sizes on window resize (debounced-ish)
+    let resizeId = null;
+    window.addEventListener('resize', () => {
+        if (resizeId) cancelAnimationFrame(resizeId);
+        resizeId = requestAnimationFrame(() => { setSizeAndSync(); resizeId = null; });
+    });
     const mousePos = { x: 0, y: 0 };
 
     // playhead state
@@ -54,9 +95,11 @@ export function initCanvas(canvas, canvasOverlay, audioCtx) {
         const { onMove, onDown, onUp } = handlers;
 
         canvasOverlay.onmousemove = (evt) => {
-            const rect = canvas.getBoundingClientRect();
-            mousePos.x = (evt.clientX - rect.left);
-            mousePos.y = (evt.clientY - rect.top);
+            // use overlay's bounding rect so coords remain consistent
+            const rect = canvasOverlay.getBoundingClientRect();
+            // map client coords to canvas pixels (internal width)
+            mousePos.x = (evt.clientX - rect.left) * (canvas.width / rect.width || 1);
+            mousePos.y = (evt.clientY - rect.top) * (canvas.height / rect.height || 1);
             trimbarsDrawer.moveTrimBars(mousePos);
             if (onMove) onMove(mousePos);
         };

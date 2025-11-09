@@ -4,33 +4,39 @@
     <meta charset="utf-8">
     <title>SAMPLER</title>
     <link rel="stylesheet" href="css/styles.css">
-    <!-- type="module" is necessary if the main.js file is using import / export (aka ES/JS modules)
-     Try removing it and see what happens in the debug console! -->
     <script src="js/main.js" type="module"></script>
 </head>
 
 <body>
-    
+    <div class="title-container">
+        <h1>SAMPLER</h1>
+        <p>by Bence DI PLACIDO & Daniel CARRIBA NOSRATI</p>
+    </div>
+    <br>
     <div class="sampler-container">
-        <h1>Load a preset and play it !</h1>
-        <div>
-            <label for="presetSelect">Choose preset: </label>
-            <select id="presetSelect"></select>
-        </div>
-        <br><br>
-        <div class="visualizer">
-            <div class="wrapper">
-                <canvas id="myCanvas" width="620" height="120"></canvas>
-                <canvas id="myCanvasOverlay" width="620" height="120"></canvas>
+        <div class="preset-container">
+            <h2>Play the Sampler : </h2>
+            <p>Load a preset and play it !</p>
+            <div class="preset-select-wrapper">
+                <label for="presetSelect">Choose preset : </label>
+                <select id="presetSelect"></select>
             </div>
         </div>
-        <div id="padGrid" class="pad-grid" aria-label="Sampler pads"></div>
+        <div class="content-row">
+            <div class="visualizer">
+                <div class="wrapper">
+                    <canvas id="myCanvas" width="620" height="120"></canvas>
+                    <canvas id="myCanvasOverlay" width="620" height="120"></canvas>
+                </div>
+            </div>
+
+            <div id="padGrid" class="pad-grid" aria-label="Sampler pads"></div>
+        </div>
     </div>
-
-            <!-- <div style="margin-top:8px;"></div> -->
-
+    <br>
     <div class="recorder-container">
-        <h1>Record audio yourself</h1>
+        <h2>Record new Samples : </h2>
+        <p>Record audio samples yourself and add them to the sampler.</p>
         <div>
             <button id="record">🎙️ Record</button>
             <button id="stop">⏹️ Stop</button>
@@ -38,7 +44,7 @@
             <button id="send">📤 Send to Server</button>
         </div>
         <progress id="progress" value="0" max="100" style="width:400px; display:none;"></progress>
-        <canvas id="recordVisualizer"></canvas>
+        <canvas id="recordVisualizer" width="620" height="120"></canvas>
     </div>
 </body>
 

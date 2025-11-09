@@ -1,49 +1,121 @@
-body{
-  background-color: black;
-  color: white;
+:root {
+  --bg: #000;
+  --muted: #333;
+  --accent: #c62828;
+  --pad-size: 120px;
+  --pad-gap: 10px;
+  --visualizer-max: 620px;
+  --visualizer-height: 120px;
 }
 
-label {
-  color: white;
-  font-size: 20px;
+html, body {
+  margin: 0;
+  background-color: var(--bg);
+  color: #fff;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* TITLE CONTAINER */
+.title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  overflow-x: auto;
+}
+
+/* SAMPLER CONTAINER */
+.sampler-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+  padding: 8px;
+  box-sizing: border-box;
+  background-color: black;
+}
+
+.sampler-container > h2,
+.sampler-container > div:nth-of-type(1) {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.content-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: var(--visualizer-max);
+  max-height: var(--visualizer-height);
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  box-sizing: border-box;
+  aspect-ratio: calc(var(--visualizer-max) / var(--visualizer-height));
+  min-height: var(--visualizer-height);
+  display: block;
+}
+
 .wrapper canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  box-sizing: border-box;
+  visibility: visible;
 }
 
 #myCanvas {
-  border: 1px solid white;
-  margin-top: 16px;
-  background-color:black;
-  z-index:0;
+  border: 1px solid var(--accent);
+  background: #000;
+  z-index: 0;
 }
 
 #myCanvasOverlay {
-  border:1px solid red;
-  margin-top: 16px;
   position: absolute;
-  z-index:10;
-  
+  left: 0;
+  top: 0;
+  z-index: 1;
+  pointer-events: auto;
 }
 
-/* 4x4 pad grid for sampler */
+/* PAD GRID - fixed 4x4 layout */
 .pad-grid {
   display: grid;
-  grid-template-columns: repeat(4, 120px);
-  grid-template-rows: repeat(4, 120px);
-  gap: 10px;
+  grid-template-columns: repeat(4, var(--pad-size));
+  grid-auto-rows: var(--pad-size);
+  gap: var(--pad-gap);
+  justify-content: center;
   background-color: black;
+  padding: 8px;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 .pad {
   font-size: 20px;
-  width: 120px;
-  height: 120px;
-  background: #333333;
+  width: var(--pad-size);
+  height: var(--pad-size);
+  background: var(--muted);
   color: #fff;
-  border: 1px solid red;
+  border: 1px solid var(--accent);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -51,17 +123,18 @@ label {
   cursor: pointer;
   user-select: none;
   box-shadow: 0 2px 0 rgba(0,0,0,0.6);
-  transition: transform 0.1s ease, background 0.5s;
+  transition: transform 0.1s ease, background 0.25s, border-color 0.15s;
+  box-sizing: border-box;
 }
 
 .pad:hover {
   background: #1d1d1d;
-  border: 2px solid white;
+  border: 2px solid #fff;
 }
 
 .pad:active {
   transform: translateY(2px);
-  background: #4CAF50; 
+  background: #4CAF50;
 }
 
 .pad.disabled {
@@ -69,49 +142,33 @@ label {
   cursor: not-allowed;
 }
 
-.pad.disabled:hover{
-  background: #333333;
-  border: 1px solid red;
+.pad.disabled:hover {
+  background: var(--muted);
+  border: 1px solid var(--accent);
+  transform: none;
 }
 
-.pad.disabled:active{
-  transform: translateY(0px);
-  background: #333333;
-}
-
-.sampler-container {
+.preset-container {
+  width: 100%;
+  max-width: var(--visualizer-max);
+  margin: 0 auto;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* margin-top: 60px; */
-  background-color: black;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
-.visualizer {
-  min-width: 620px;
-}
-
-.wrapper {
-  position: relative;
-  width: 620px;
-  height: 200px;
-
-}
-
-#myCanvas {
-  border: 1px solid #333;
-  background: #000;
-}
-
-#myCanvasOverlay {
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-/* Simple preset select */
+/* center label + select horizontally */
 .preset-select-wrapper {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 #presetSelect {
@@ -119,16 +176,18 @@ label {
   color: #fff;
   padding: 10px 12px;
   border-radius: 6px;
-  border: 1px solid red;
+  border: 1px solid var(--accent);
   font-size: 16px;
   min-width: 160px;
   cursor: pointer;
+  box-sizing: border-box;
 }
-#presetSelect:hover{
+
+#presetSelect:hover {
   border-color: white;
   background: #222;
-
 }
+
 #presetSelect:focus {
   outline: 2px solid white;
   outline-offset: 2px;
@@ -139,81 +198,176 @@ label {
   cursor: not-allowed;
 }
 
-@media (max-width: 520px) {
-  #presetSelect { min-width: 100%; box-sizing: border-box; }
-}
-
-.preset-label {
-  display: block;
-  font-size: 12px;
-  color: rgba(255,255,255,0.85);
-  margin-bottom: 6px;
-}
-
-#presetSelect option {
-  background: #111; 
-  color: #fff;
-}
-
-#presetSelect option:hover {
-  background-color: #2b6cb0; 
-  color: #fff;
-}
-
-#presetSelect option:checked {
-  background-color: #1f4f8b;
-  color: #fff;
-}
-#recorderContainer{
-  margin-top:200px;
-}
-
-#recordVisualizer{
-  margin-top: 20px;
-  width: 600px;
-  height: 200px;
-  border:1px solid red;
-}
-
-.recorder-container{
+/* RECORDER CONTAINER */
+.recorder-container,
+#recorderContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 60px;
-  background-color: black;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  overflow-x: auto;
 }
 
-button{
-  background-color: #333333;
-  color: white;
-  font-size: 16px;
-  padding: 10px 20px;
-  border: 1px solid red;
-  border-radius: 6px;
+/* button row centered and wrap if needed */
+.recorder-container > div,
+#recorderContainer > div {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* progress bar sizing matches visualizer width */
+.recorder-container progress,
+#recorderContainer progress {
+  width: 100%;
+  max-width: var(--visualizer-max);
+  box-sizing: border-box;
+}
+
+/* RECORD VISUALIZER: same limits and aspect-ratio as main canvas */
+#recordVisualizer {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: min(100%, var(--visualizer-max));
+  max-width: var(--visualizer-max);
+  height: auto;
+  max-height: var(--visualizer-height);
+  aspect-ratio: calc(var(--visualizer-max) / var(--visualizer-height));
+  border: 1px solid var(--accent);
+  background: #000;
+  box-sizing: border-box;
+}
+
+.recorder-container button,
+#recorderContainer button {
+  background: var(--muted);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: clamp(14px, 2.2vw, 16px);
   cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.6);
+  transition: transform 0.08s ease, background 0.15s ease, border-color 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
-button:hover{
+.recorder-container button:hover,
+#recorderContainer button:hover {
   background: #1d1d1d;
-  border: 2px solid white;
+  border-color: #fff;
 }
 
-button:active{
+.recorder-container button:active,
+#recorderContainer button:active {
   transform: translateY(2px);
   background: #4CAF50;
 }
 
-button:disabled{
+.recorder-container button:disabled,
+#recorderContainer button:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
 
-button:disabled:hover{
-  background: #333333;
-  border: 1px solid red;
+/* RESPONSIVE RULES */
+
+/* Switch to side-by-side layout (grid left, visualizer right) when enough width */
+@media (min-width: 1200px) {
+  .content-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center; /* center the pair */
+    gap: 24px;
+    width: auto;
+  }
+
+  .pad-grid {
+    order: 1;
+    justify-content: start;
+  }
+
+  .visualizer {
+    order: 2;
+    flex: 0 0 var(--visualizer-max);
+    max-width: var(--visualizer-max);
+  }
+
+  .sampler-container {
+    align-items: center;
+  }
 }
 
-button:disabled:active{
-  transform: translateY(0px);
-  background: #333333;
+/* narrower screens: reduce pad size so 4x4 fits */
+@media (max-width: 640px) {
+  :root { --pad-gap: 10px; }
+  :root { --pad-size: clamp(60px, calc((100vw - 32px - (var(--pad-gap) * 3)) / 4), 100px); }
+
+  .content-row {
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+
+  .wrapper {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .visualizer {
+    width: 100%;
+    max-width: var(--visualizer-max); margin-left:
+    auto; margin-right: auto;
+  }
+
+  .pad-grid {
+    justify-content: center;
+    width: 100%;
+    max-width: calc(var(--pad-size) * 4 + (var(--pad-gap) * 3));
+    box-sizing: border-box;
+    padding: 8px 0;
+    overflow-x: auto;
+  }
+
+  /* record visualizer tightens when viewport is narrow */
+  #recordVisualizer {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: min(var(--visualizer-max), calc(100% - 32px));
+    max-width: var(--visualizer-max);
+    box-sizing: border-box;
+    aspect-ratio: calc(var(--visualizer-max) / var(--visualizer-height));
+    height: auto;                /* scale height with width */
+    max-height: var(--visualizer-height);
+    min-height: var(--visualizer-height);
+    border: 1px solid var(--accent);
+    background: #000;
+  }
+}
+
+/* ensure visualizer stays centered and visible between breakpoints */
+.visualizer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
 }
