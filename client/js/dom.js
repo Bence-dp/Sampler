@@ -14,7 +14,7 @@ export function clearPadGrid(padGrid) {
 
 export function createPadElement(info, onClick) {
     // Mapping des touches pour chaque index de sample
-    const keyMapping = ['W', 'X', 'C', 'V', 'A', 'S', 'D', 'F', 'Q', 'Z', 'E', 'R', '1', '2', '3', '4'];
+    const keyMapping = ['W', 'X', 'C', 'V', 'Q', 'S', 'D', 'F', 'A', 'Z', 'E', 'R', '1', '2', '3', '4'];
     
     const pad = document.createElement('div');
     pad.className = 'pad';
