@@ -216,7 +216,7 @@ app.post("/api/upload/:folder", upload.array("files", 16), async (req, res, next
         const overwrite = req.body && (req.body.overwrite === '1' || String(req.body.overwrite).toLowerCase() === 'true');
 
         if (await fileExists(presetPath) && !overwrite) {
-          // Merge: append new samples to existing preset JSON instead of overwriting
+          // Merge: append new samples to existing preset JSON
           const now = new Date().toISOString();
           const current = await readJSON(presetPath).catch(() => ({}));
 

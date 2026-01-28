@@ -27,6 +27,7 @@ export default class Recorder {
 		this.apiBase = (options && options.apiBase) || 'http://localhost:3000';
 
 		this.canvasMgr = (options && options.canvasMgr) || null;
+		this.presetManager = (options && options.presetManager) || null;
 
 		this.selectors = (options && options.selectors) || {
 			canvas: 'recordVisualizer',
@@ -63,10 +64,10 @@ export default class Recorder {
 			this.recorder.addEventListener('dataavailable', (e) => this._onRecordingReady(e));
 			this.recorder.addEventListener('start', () => console.log('Recording started'));
 
-			this.recordButton.addEventListener('click', () => this.startRecording());
-			this.stopButton.addEventListener('click', () => this.stopRecording());
-			this.playButton.addEventListener('click', () => this.playSample());
-			this.sendButton.addEventListener('click', () => this.sendToServer());
+		this.recordButton.addEventListener('click', (e) => { e.preventDefault(); this.startRecording(); });
+		this.stopButton.addEventListener('click', (e) => { e.preventDefault(); this.stopRecording(); });
+		this.playButton.addEventListener('click', (e) => { e.preventDefault(); this.playSample(); });
+		this.sendButton.addEventListener('click', (e) => { e.preventDefault(); this.sendToServer(); });
 
 			this._disableButtons(false, true, true, true);
 			console.log('Recorder ready');
@@ -268,13 +269,21 @@ export default class Recorder {
 
 			this.progressBar.style.display = 'none';
 
-			if (uploadResp && uploadResp.preset) {
-				alert('Enregistrement envoyé et preset créé: ' + (uploadResp.preset.name || uploadResp.preset.slug || 'ok'));
-				return uploadResp.preset;
+			if (uploadResp && uploadResp.body && uploadResp.body.preset) {
+				const presetName = uploadResp.body.preset.name || uploadResp.body.preset.slug || 'nouveau preset';
+				console.log('Preset créé/mis à jour:', presetName);
+
+				if (this.presetManager) {
+					await this.presetManager.addPresetDynamically(uploadResp.body.preset, true);
+					alert(`Enregistrement envoyé et preset "${presetName}" créé/mis à jour !`);
+				} else {
+					alert(`Preset "${presetName}" créé ! Rechargez la page pour le voir.`);
+				}
+				return uploadResp.body.preset;
 			}
 
-			alert('Upload réussi : ' + (uploadResp.files && uploadResp.files[0] && uploadResp.files[0].url ? uploadResp.files[0].url : 'ok'));
-			return uploadResp;
+			alert('Upload réussi : ' + (uploadResp.body && uploadResp.body.files && uploadResp.body.files[0] && uploadResp.body.files[0].url ? uploadResp.body.files[0].url : 'ok'));
+			return uploadResp.body;
 		} catch (err) {
 			this.progressBar.style.display = 'none';
 			console.error('Upload/creation error:', err);

@@ -7,6 +7,7 @@ import { Sampler } from './sampler.js';
 import { getSelectors } from './dom.js';
 import { initCanvas } from './canvasManager.js';
 import Recorder from './recorder.js';
+import { PresetManager } from './presetManager.js';
 /* import recorder.js */
 // The AudioContext object is the main "entry point" into the Web Audio API
 let ctx;
@@ -22,38 +23,15 @@ let canvas, canvasOverlay;
 let trimPositions = {};
 let currentSelected = { index: -1, buf: null, name: null };
 let recorder;
+let presetManager;
 
 window.onload = async function init() {
     ctx = new AudioContext();
     const apiBase = 'http://localhost:3000';
 
-    let presets = null;
-    try {
-        const resp = await fetch(`${apiBase}/api/presets`);
-        if (resp.ok) presets = await resp.json();
-    } catch (err) {
-        console.warn(`Could not fetch ${apiBase}/api/presets, using fallback`, err);
-    }
-
-    let samples = fallbackSoundURLs.map(u => ({ url: u, name: u.split('/').pop() }));
-
     const els = getSelectors();
     const presetSelect = els.presetSelect;
     const padGrid = els.padGrid;
-
-    if (presets && presets.length > 0) {
-        presets.forEach((p, i) => {
-            const opt = document.createElement('option');
-            opt.value = i;
-            opt.textContent = p.name || `Preset ${i+1}`;
-            presetSelect.appendChild(opt);
-        });
-
-        const first = presets[0];
-        if (first.samples && first.samples.length > 0) {
-            samples = first.samples.map(s => ({ url: `${apiBase}/presets/${s.url}`, name: s.name || s.url }));
-        }
-    }
 
     canvas = els.canvas;
     canvasOverlay = els.canvasOverlay;
@@ -76,21 +54,28 @@ window.onload = async function init() {
 
     canvasMgr.startAnimation();
 
-    // create recorder after canvas manager so it can receive canvasMgr for playhead
-    // pass `apiBase` so Recorder uploads to the correct server (can be remote)
-    recorder = new Recorder({ audioContext: ctx, canvasMgr, canvas, apiBase });
-    await recorder.init();
-
     const sampler = new Sampler({ ctx, padGrid, waveformDrawer, trimbarsDrawer, canvas, trimPositions, currentSelected, canvasMgr });
 
-    presetSelect.onchange = async (evt) => {
-        const index = parseInt(evt.target.value);
-        const p = presets[index];
-        let urls = fallbackSoundURLs;
-        if (p && p.samples && p.samples.length > 0) urls = p.samples.map(s => ({ url: `${apiBase}/presets/${s.url}`, name: s.name || s.url }));
-        await sampler.loadAndShow(urls);
-    };
+    // Initialiser le PresetManager
+    presetManager = new PresetManager({
+        apiBase,
+        presetSelect,
+        sampler
+    });
 
-    await sampler.loadAndShow(samples);
+    // Charger les presets et configurer le handler de changement
+    await presetManager.initialize();
+    presetManager.setupChangeHandler();
+
+    // create recorder after preset manager so it can notify on new uploads
+    // pass `apiBase` so Recorder uploads to the correct server (can be remote)
+    recorder = new Recorder({ audioContext: ctx, canvasMgr, canvas, apiBase, presetManager });
+    await recorder.init();
+
+    // Si aucun preset n'est disponible, charger les sons par défaut
+    if (presetManager.presets.length === 0) {
+        const samples = fallbackSoundURLs.map(u => ({ url: u, name: u.split('/').pop() }));
+        await sampler.loadAndShow(samples);
+    }
 };
 
