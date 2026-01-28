@@ -21,6 +21,12 @@
                 <label for="presetSelect">Choose preset : </label>
                 <select id="presetSelect"></select>
             </div>
+            <div id="loadingContainer" style="display: none; margin-top: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <progress id="samplesProgress" value="0" max="100" style="flex: 1; height: 20px;"></progress>
+                    <span id="loadingText">Chargement...</span>
+                </div>
+            </div>
         </div>
         <div class="content-row">
             <div class="visualizer">
