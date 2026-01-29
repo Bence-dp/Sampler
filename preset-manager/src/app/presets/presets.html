@@ -1,0 +1,36 @@
+<div class="container">
+    <h2>Preset list:</h2>
+    <div class="ajout-btn">
+        <a routerLink="/add">
+            <button mat-flat-button color="accent">
+                Add Preset
+            </button>
+        </a>
+    </div>
+</div>
+
+<mat-divider></mat-divider>
+
+<mat-list>
+
+    @for (preset of presets(); track preset.id || preset.name) {
+        <nav>
+            <a routerLink="/preset/{{preset.slug || preset.name}}">
+                <div>
+                    <h3 mat-subheader>
+                        {{preset.name}} ({{preset.samples.length}} samples)
+                    </h3>
+                    <mat-list-item (click)="presetClique(preset)">
+                        <div matListItemTitle>
+                            Type: {{preset.type}} @if (!preset.isFactoryPresets) { (User Preset) }
+                        </div>
+                    </mat-list-item>
+                    
+                    <mat-divider></mat-divider>
+                </div>
+            </a>
+        </nav>
+    }
+
+</mat-list>
+

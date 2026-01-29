@@ -1,0 +1,30 @@
+.form {
+   display:flex;
+   flex-direction: column;
+   margin:5px;
+}
+
+/* .container {
+    display: flex;
+    flex-direction: column;
+} */
+
+.edit-btn {
+    align-self: flex-start;
+}
+
+.sample-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.sample-field {
+    flex: 1;
+}
+
+h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}

@@ -1,0 +1,16 @@
+.rendu {
+    color: green;
+}
+
+.nonRendu {
+    color: red;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+}
+
+.ajout-btn {
+    align-self: flex-end;
+}

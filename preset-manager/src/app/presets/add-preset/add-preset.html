@@ -1,0 +1,46 @@
+<div class="container">
+    <h1>Add New Preset</h1>
+
+    <form ngForm class="form" #presetForm (submit)="onAjouterPreset($event); presetForm.reset()">
+        <mat-form-field class="form">
+            <mat-label>Preset Name</mat-label>
+            <input matInput [(ngModel)]="nomPreset" name="nom" placeholder="Preset Name" required >
+        </mat-form-field>
+        
+        <mat-form-field class="form">
+            <mat-label>Preset Type</mat-label>
+            <input matInput [(ngModel)]="typePreset" name="type" placeholder="Preset Type (Drumkit, Recording, etc.)" required>
+        </mat-form-field>
+
+        <h3>Samples ({{samples.length}}/16)</h3>
+        
+        @for (sample of samples; track $index; let i = $index) {
+            <div class="sample-row">
+                <mat-form-field class="sample-field">
+                    <mat-label>Sample Name</mat-label>
+                    <input matInput [(ngModel)]="sample.name" [name]="'sample-name-' + i" placeholder="kick, snare, etc.">
+                </mat-form-field>
+                
+                <mat-form-field class="sample-field">
+                    <mat-label>Sample URL</mat-label>
+                    <input matInput [(ngModel)]="sample.url" [name]="'sample-url-' + i" placeholder="https://www.example.com/file.wav">
+                </mat-form-field>
+                
+                <button mat-icon-button type="button" color="warn" (click)="removeSample(i)">
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </div>
+        }
+
+        <button mat-stroked-button type="button" color="accent" (click)="addSample()" [disabled]="samples.length >= 16">
+            <mat-icon>add</mat-icon> Add Sample
+        </button>
+
+        <br><br>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="!ajoutActive" >
+            Add Preset
+        </button>
+
+    </form>
+</div>

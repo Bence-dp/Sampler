@@ -1,0 +1,69 @@
+/* You can add global styles to this file, and also import other style files */
+
+:root {
+  --bg: #000;
+  --muted: #333;
+  --accent: #c62828;
+}
+
+html, body { 
+  height: 100%; 
+}
+
+body { 
+  margin: 0; 
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--bg);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark theme button styling */
+button {
+  background: var(--muted);
+  color: #fff;
+  border: 1px solid var(--accent);
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background: var(--accent);
+  box-shadow: 0 0 15px rgba(198, 40, 40, 0.5);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Dark theme card/container styling */
+mat-card, .mat-mdc-card {
+  background: var(--muted) !important;
+  border: 1px solid var(--accent);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Material form field dark theme */
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-label-text-color: #fff;
+  --mdc-outlined-text-field-input-text-color: #fff;
+  --mdc-outlined-text-field-focus-label-text-color: var(--accent);
+  --mdc-outlined-text-field-focus-outline-color: var(--accent);
+}
+
+/* Material list items dark theme */
+.mat-mdc-list-item {
+  --mdc-list-list-item-label-text-color: #fff;
+  --mdc-list-list-item-hover-label-text-color: var(--accent);
+}
+
+/* Links */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #ff5252;
+}

@@ -1,0 +1,33 @@
+@if(presetTransmis) {
+    <mat-card appearance="outlined">
+        <mat-card-header>
+            <mat-card-title>Preset Details</mat-card-title>
+            <mat-card-subtitle>{{presetTransmis.type}} @if(presetTransmis.isFactoryPresets) { (Factory Preset) } @else { (User Preset) }</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <h3>{{presetTransmis.name}}</h3>
+            <p><strong>Type:</strong> {{presetTransmis.type}}</p>
+            @if(presetTransmis.updatedAt) {
+                <p><strong>Last Updated:</strong> {{presetTransmis.updatedAt | date:'dd/MM/yyyy HH:mm'}}</p>
+            }
+            
+            <h4>Samples ({{presetTransmis.samples.length}}):</h4>
+            <ul>
+                @for (sample of presetTransmis.samples; track sample.name) {
+                    <li>
+                        <strong>Name: </strong>{{sample.name}}<br>
+                        <strong>Location: </strong>{{sample.url}}
+                    </li>
+                }
+            </ul>
+        </mat-card-content>
+        <mat-card-actions id="bottom">
+            <nav>
+                <button mat-stroked-button color="primary" (click)="onClickEdit()" [disabled]="!isAdmin()">EDIT</button>
+            </nav>
+            <button mat-flat-button color="warn" (click)="onDelete()">
+                DELETE
+            </button>
+        </mat-card-actions>
+    </mat-card>
+}

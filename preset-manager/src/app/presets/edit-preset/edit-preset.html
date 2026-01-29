@@ -1,0 +1,43 @@
+@if (preset()) {
+    <div class="container">
+        <h1>Edit Preset: {{preset()!.name}}</h1>
+        <form ngForm class="form" #formupdate (submit)="onSaveAssignment(); formupdate.reset();" >
+            <mat-form-field class="form">
+                <mat-label>Preset Name</mat-label>
+                <input matInput placeholder="Preset Name" [(ngModel)]="nomPreset" name="preset-name">
+            </mat-form-field>
+            <mat-form-field class="form">
+                <mat-label>Preset Type</mat-label>
+                <input matInput placeholder="Preset Type" [(ngModel)]="typePreset" name="type">
+            </mat-form-field>
+
+            <h3>Samples ({{samples.length}}/16)</h3>
+            
+            @for (sample of samples; track $index; let i = $index) {
+                <div class="sample-row">
+                    <mat-form-field class="sample-field">
+                        <mat-label>Sample Name</mat-label>
+                        <input matInput [(ngModel)]="sample.name" [name]="'sample-name-' + i" placeholder="kick, snare, etc.">
+                    </mat-form-field>
+                    
+                    <mat-form-field class="sample-field">
+                        <mat-label>Sample URL</mat-label>
+                        <input matInput [(ngModel)]="sample.url" [name]="'sample-url-' + i" placeholder="https://www.example.com/file.wav">
+                    </mat-form-field>
+                    
+                    <button mat-icon-button type="button" color="warn" (click)="removeSample(i)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </div>
+            }
+
+            <button mat-stroked-button type="button" color="accent" (click)="addSample()" [disabled]="samples.length >= 16">
+                <mat-icon>add</mat-icon> Add Sample
+            </button>
+
+            <br><br>
+
+            <button mat-raised-button color="primary" [disabled]="((!nomPreset) || !typePreset)">Save</button>
+        </form>
+    </div>
+}
