@@ -19,7 +19,7 @@ This project was made using the slides and the provided examples from Michel BUF
 
 ```bash
 git clone https://github.com/Bence-dp/Sampler.git
-cd Sampler/
+cd Sampler
 ```
 
 ## How to use
@@ -28,7 +28,7 @@ To run the project, first run the server using [Node.js](https://nodejs.org/), a
 
 ### Run the server
 ```bash
-cd server/
+cd server
 npm i
 npm run dev
 ```
@@ -36,10 +36,18 @@ npm run dev
 ### Run the client
 
 ```bash
-cd client/
+cd client
 ```
 
 You may run the client with [Live Server for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) or any other local development server.
+
+### Run the `Sampler Preset Manager` Angular app
+
+```bash
+cd preset-manager
+npm i
+ng serve
+```
 
 ## Implemented features
 
