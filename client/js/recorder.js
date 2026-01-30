@@ -221,7 +221,7 @@ export default class Recorder {
 		const mime = this.lastBlob.type || 'audio/webm';
 		const extMatch = mime.match(/audio\/(.+)/);
 		const ext = extMatch ? extMatch[1].replace(/[^a-z0-9]/gi, '') : 'webm';
-		const filename = `${sampleBaseName.replace(/[^a-z0-9-_]/gi, '_')}-${Date.now()}.${ext}`;
+		const filename = `${sampleBaseName.replace(/[^a-z0-9-_]/gi, '_')}.${ext}`;
 
 		this.progressBar.style.display = 'block';
 		this.progressBar.value = 0;
