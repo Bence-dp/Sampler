@@ -25,7 +25,7 @@
             <nav>
                 <button mat-stroked-button color="primary" (click)="onClickEdit()" [disabled]="!isAdmin()">EDIT</button>
             </nav>
-            <button mat-flat-button color="warn" (click)="onDelete()">
+            <button mat-flat-button color="warn" (click)="onDelete()" [disabled]="!isAdmin()">
                 DELETE
             </button>
         </mat-card-actions>
