@@ -43,11 +43,8 @@ window.onload = async function init() {
     canvasMgr.setupMouseHandlers({
         onMove: () => {},
         onUp: () => {
-            if (currentSelected.index >= 0) {
-                trimPositions[currentSelected.index] = {
-                    left: trimbarsDrawer.leftTrimBar.x,
-                    right: trimbarsDrawer.rightTrimBar.x
-                };
+            if (currentSelected.index >= 0 && sampler.audioEngine) {
+                sampler.updateTrimPosition(currentSelected.index);
             }
         }
     });
