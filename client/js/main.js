@@ -27,7 +27,7 @@ let presetManager;
 
 window.onload = async function init() {
     ctx = new AudioContext();
-    const apiBase = 'http://localhost:3000';
+    const apiBase = 'https://samplerserver.onrender.com';
 
     const els = getSelectors();
     const presetSelect = els.presetSelect;

@@ -2,7 +2,7 @@
 
 export class PresetManager {
     constructor(options = {}) {
-        this.apiBase = options.apiBase || 'http://localhost:3000';
+        this.apiBase = options.apiBase || 'https://samplerserver.onrender.com';
         this.presetSelect = options.presetSelect;
         this.sampler = options.sampler;
         this.presets = [];

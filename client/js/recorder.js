@@ -24,7 +24,7 @@ export default class Recorder {
 		this.limiter.connect(this.ac.destination);
 
 		// base URL for API (upload / presets). Can be remote server.
-		this.apiBase = (options && options.apiBase) || 'http://localhost:3000';
+		this.apiBase = (options && options.apiBase) || 'https://samplerserver.onrender.com';
 
 		this.canvasMgr = (options && options.canvasMgr) || null;
 		this.presetManager = (options && options.presetManager) || null;

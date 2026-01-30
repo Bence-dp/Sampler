@@ -9,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
 })
 
 export class PresetsService {
-  backendURL = 'http://localhost:3000/api/presets';
+  backendURL = 'https://samplerserver.onrender.com/api/presets';
 
   constructor(private logginService: LoggingService, private http: HttpClient) {
     console.log("Service Presets créé !");
@@ -70,6 +70,6 @@ export class PresetsService {
     // Upload to server - use preset name as folder
     const folderName = presetName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
     console.log('Uploading to folder:', folderName);
-    return this.http.post(`http://localhost:3000/api/upload/${folderName}`, formData);
+    return this.http.post(`https://samplerserver.onrender.com/api/upload/${folderName}`, formData);
   }
 }

@@ -3,4 +3,3 @@ node_modules
 coverage
 .vitest
 data/presets
-public/presets
