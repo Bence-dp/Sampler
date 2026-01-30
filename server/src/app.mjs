@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import crypto from "crypto";
 import multer from "multer";
 
-// import utility functions from utils.mjs
+import { Preset } from "./models/preset.model.mjs";
 import {
   slugify, safePresetPath, fileExists,
   readJSON, writeJSON, listPresetFiles, validatePreset
@@ -81,80 +81,67 @@ app.get("/api/health", (_req, res) => res.json({ ok: true, now: new Date().toISO
 // GET list/search
 app.get("/api/presets", async (req, res, next) => {
   try {
-    // req.query contains optional parameters: q (text search), type (filter by type), factory (true/false)
-    // that appear in the URI like that : /api/presets?q=kick&type=drum&factory=true
-    // the javascript syntax in the following like uses the JavaScript "destructuring" assignment
     const { q, type, factory } = req.query;
-    const files = await listPresetFiles();
-
-    // Promise.all is used to read all JSON files in parallel and in a non-blocking way
-    // This improves performance when dealing with multiple files
-    // The syntax of Promise.all is a bit tricky: we create an array of promises
-    // by mapping each filename to a readJSON call, and then we wait for all of them to complete
-    let items = await Promise.all(files.map((f) => readJSON(path.join(DATA_DIR, f))));
-
-    // Apply filters
+    
+    let query = {};
+    
     if (type) {
-      const t = String(type).toLowerCase();
-      items = items.filter((p) => p?.type?.toLowerCase() === t);
+      query.type = new RegExp(String(type), 'i');
     }
     if (factory !== undefined) {
-      const want = String(factory) === "true";
-      items = items.filter((p) => Boolean(p?.isFactoryPresets) === want);
+      query.isFactoryPresets = String(factory) === "true";
     }
     if (q) {
-      const needle = String(q).toLowerCase();
-      items = items.filter((p) => {
-        const inName = p?.name?.toLowerCase().includes(needle);
-        const inSamples = Array.isArray(p?.samples) && p.samples.some((s) =>
-          s && (s.name?.toLowerCase().includes(needle) || s.url?.toLowerCase().includes(needle))
-        );
-        return inName || inSamples;
-      });
+      const needle = String(q);
+      query.$or = [
+        { name: new RegExp(needle, 'i') },
+        { 'samples.name': new RegExp(needle, 'i') },
+        { 'samples.url': new RegExp(needle, 'i') }
+      ];
     }
 
-    // Return the filtered list. the.json method sets the Content-Type header and stringifies the object
+    const items = await Preset.find(query).lean();
     res.json(items);
   } catch (e) { next(e); }
 });
 
-// GET one preset by name or slug. slug means a URL-friendly version of the name
+// GET one preset by name or slug
 app.get("/api/presets/:name", async (req, res, next) => {
   try {
-    const file = safePresetPath(req.params.name);
-    console.log("Fetching preset file:", file);
-    if (!(await fileExists(file))) return res.status(404).json({ error: "Preset not found" });
-    res.json(await readJSON(file));
+    const preset = await Preset.findOne({
+      $or: [
+        { name: req.params.name },
+        { slug: req.params.name }
+      ]
+    }).lean();
+    
+    if (!preset) return res.status(404).json({ error: "Preset not found" });
+    res.json(preset);
   } catch (e) { next(e); }
 });
 
 // POST for creating a new preset
 app.post("/api/presets", async (req, res, next) => {
   try {
-    // explanation of ?? below: if body is null or undefined, use empty object
     const preset = req.body ?? {};
 
-    // validate the received preset object
     const errs = validatePreset(preset);
     if (errs.length) return res.status(400).json({ errors: errs });
 
-    // check if a preset with the same name already exists
-    const file = safePresetPath(preset.name);
-    if (await fileExists(file)) return res.status(409).json({ error: "A preset with this name already exists" });
+    const exists = await Preset.findOne({ name: preset.name });
+    if (exists) return res.status(409).json({ error: "A preset with this name already exists" });
 
-    // Add metadata and save the preset in a json file
     const now = new Date().toISOString();
-    const withMeta = {
+    const newPreset = new Preset({
       id: preset.id || crypto.randomUUID(),
       slug: slugify(preset.name),
       updatedAt: now,
       ...preset,
       name: preset.name,
-    };
-    await writeJSON(file, withMeta);
-
-    // return the created preset
-    res.status(201).json(withMeta);
+    });
+    
+    await newPreset.save();
+    res.status(201).json(newPreset.toObject());
   } catch (e) { next(e); }
 });
 
@@ -212,30 +199,22 @@ app.post("/api/upload/:folder", upload.array("files", 16), async (req, res, next
         return res.status(400).json({ uploaded: fileInfos.length, files: fileInfos, presetErrors: errs });
       }
 
-      const presetPath = safePresetPath(preset.name);
-        const overwrite = req.body && (req.body.overwrite === '1' || String(req.body.overwrite).toLowerCase() === 'true');
+      const overwrite = req.body && (req.body.overwrite === '1' || String(req.body.overwrite).toLowerCase() === 'true');
+      const existing = await Preset.findOne({ name: presetName });
 
-        if (await fileExists(presetPath) && !overwrite) {
-          // Merge: append new samples to existing preset JSON
+        if (existing && !overwrite) {
           const now = new Date().toISOString();
-          const current = await readJSON(presetPath).catch(() => ({}));
-
-          // existing samples (ensure array)
-          const existingSamples = Array.isArray(current.samples) ? current.samples.slice() : [];
-
-          // new samples from upload
+          const existingSamples = Array.isArray(existing.samples) ? existing.samples.slice() : [];
           const newSamples = fileInfos.map(f => ({ url: `./${req.params.folder}/${f.storedName}`, name: path.parse(f.storedName).name }));
-
-          // filter out duplicates by url or name
           const toAdd = newSamples.filter(ns => !existingSamples.some(es => es.url === ns.url || es.name === ns.name));
 
           const merged = {
-            id: current.id || crypto.randomUUID(),
-            slug: slugify(current.name || preset.name),
+            id: existing.id || crypto.randomUUID(),
+            slug: slugify(existing.name || preset.name),
             updatedAt: now,
-            name: current.name || preset.name,
-            type: current.type || preset.type,
-            isFactoryPresets: current.isFactoryPresets || preset.isFactoryPresets,
+            name: existing.name || preset.name,
+            type: existing.type || preset.type,
+            isFactoryPresets: existing.isFactoryPresets || preset.isFactoryPresets,
             samples: existingSamples.concat(toAdd)
           };
 
@@ -244,16 +223,16 @@ app.post("/api/upload/:folder", upload.array("files", 16), async (req, res, next
             return res.status(400).json({ uploaded: fileInfos.length, files: fileInfos, presetErrors: errs });
           }
 
-          await writeJSON(presetPath, merged);
-          return res.status(200).json({ uploaded: fileInfos.length, files: fileInfos, preset: merged, appended: toAdd.length });
+          const updated = await Preset.findByIdAndUpdate(existing._id, merged, { new: true });
+          return res.status(200).json({ uploaded: fileInfos.length, files: fileInfos, preset: updated.toObject(), appended: toAdd.length });
         }
 
-        // either file doesn't exist or overwrite requested => write/overwrite
         const now = new Date().toISOString();
         const withMeta = { id: crypto.randomUUID(), slug: slugify(preset.name), updatedAt: now, ...preset, name: preset.name };
-        await writeJSON(presetPath, withMeta);
+        const newPreset = new Preset(withMeta);
+        await newPreset.save();
 
-        return res.status(201).json({ uploaded: fileInfos.length, files: fileInfos, preset: withMeta, overwritten: overwrite });
+        return res.status(201).json({ uploaded: fileInfos.length, files: fileInfos, preset: newPreset.toObject(), overwritten: overwrite });
     }
 
     // default response when no preset creation requested
@@ -266,70 +245,79 @@ app.post("/api/upload/:folder", upload.array("files", 16), async (req, res, next
 // PUT for replacing or renaming a preset file completely
 app.put("/api/presets/:name", async (req, res, next) => {
   try {
-    const oldFile = safePresetPath(req.params.name);
-    if (!(await fileExists(oldFile))) return res.status(404).json({ error: "Preset not found" });
+    const oldPreset = await Preset.findOne({
+      $or: [{ name: req.params.name }, { slug: req.params.name }]
+    });
+    if (!oldPreset) return res.status(404).json({ error: "Preset not found" });
 
     const preset = req.body ?? {};
     const errs = validatePreset(preset);
     if (errs.length) return res.status(400).json({ errors: errs });
 
     const now = new Date().toISOString();
-    const newFile = safePresetPath(preset.name);
-    const current = await readJSON(oldFile).catch(() => ({}));
     const withMeta = {
-      id: current.id || preset.id || crypto.randomUUID(),
+      id: oldPreset.id || preset.id || crypto.randomUUID(),
       slug: slugify(preset.name),
       updatedAt: now,
       ...preset,
       name: preset.name,
     };
-    await writeJSON(newFile, withMeta);
-    if (newFile != oldFile) await fs.rm(oldFile, { force: true });
-    res.json(withMeta);
+    
+    const updated = await Preset.findByIdAndUpdate(
+      oldPreset._id,
+      withMeta,
+      { new: true }
+    );
+    
+    res.json(updated.toObject());
   } catch (e) { next(e); }
 });
 
 // PATCH partial
 app.patch("/api/presets/:name", async (req, res, next) => {
   try {
-    const oldFile = safePresetPath(req.params.name);
-    if (!(await fileExists(oldFile))) return res.status(404).json({ error: "Preset not found" });
+    const oldPreset = await Preset.findOne({
+      $or: [{ name: req.params.name }, { slug: req.params.name }]
+    });
+    if (!oldPreset) return res.status(404).json({ error: "Preset not found" });
 
-    const current = await readJSON(oldFile);
-    const merged = { ...current, ...req.body };
-    merged.name = merged.name ?? current.name;
+    const merged = { ...oldPreset.toObject(), ...req.body };
+    merged.name = merged.name ?? oldPreset.name;
     const errs = validatePreset(merged, { partial: true });
     if (errs.length) return res.status(400).json({ errors: errs });
 
     merged.slug = slugify(merged.name);
     merged.updatedAt = new Date().toISOString();
 
-    const newFile = safePresetPath(merged.name);
-    await writeJSON(newFile, merged);
-    if (newFile != oldFile) await fs.rm(oldFile, { force: true });
+    const updated = await Preset.findByIdAndUpdate(
+      oldPreset._id,
+      merged,
+      { new: true }
+    );
 
-    res.json(merged);
+    res.json(updated.toObject());
   } catch (e) { next(e); }
 });
 
 // DELETE a preset by name
 app.delete("/api/presets/:name", async (req, res, next) => {
   try {
-    const file = safePresetPath(req.params.name);
-    await fs.rm(file, { force: true });
-
-    // We should also delete the corresponding audio files in the folder with the same name
-    // get folder path and delete if exists
-    const folderPath = path.join(DATA_DIR, req.params.name);
-    await fs.rm(folderPath, { recursive: true, force: true }).catch(() => {});
+    const preset = await Preset.findOne({
+      $or: [{ name: req.params.name }, { slug: req.params.name }]
+    });
     
-    // 204 means No Content
-
+    if (preset) {
+      await Preset.findByIdAndDelete(preset._id);
+      
+      const folderPath = path.join(DATA_DIR, req.params.name);
+      await fs.rm(folderPath, { recursive: true, force: true }).catch(() => {});
+    }
+    
     res.status(204).send();
   } catch (e) { next(e); }
 });
 
-// POST for seeding multiple presets at once (for testing or initial setup)
+// POST for seeding multiple presets at once
 app.post("/api/presets:seed", async (req, res, next) => {
   try {
     const arr = Array.isArray(req.body) ? req.body : null;
@@ -340,9 +328,22 @@ app.post("/api/presets:seed", async (req, res, next) => {
       const errs = validatePreset(p);
       if (errs.length) return res.status(400).json({ errors: errs });
       const now = new Date().toISOString();
-      const withMeta = { id: p.id || crypto.randomUUID(), slug: slugify(p.name), updatedAt: now, ...p, name: p.name };
-      await writeJSON(safePresetPath(p.name), withMeta);
-      created++; slugs.push(withMeta.slug);
+      const withMeta = { 
+        id: p.id || crypto.randomUUID(), 
+        slug: slugify(p.name), 
+        updatedAt: now, 
+        ...p, 
+        name: p.name 
+      };
+      
+      await Preset.findOneAndUpdate(
+        { name: withMeta.name },
+        withMeta,
+        { upsert: true, new: true }
+      );
+      
+      created++; 
+      slugs.push(withMeta.slug);
     }
     res.status(201).json({ created, slugs });
   } catch (e) { next(e); }
