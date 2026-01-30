@@ -11,8 +11,6 @@ This Sampler project was made for the Web course at Université Côte d'Azur.
 - Bence DI PLACIDO
 - Daniel CARRIBA NOSRATI
 
-This project was made using the slides and the provided examples from Michel BUFFA.
-
 <!-- ## Requirements
 
 - [Node.js](https://nodejs.org/) is required.
@@ -157,10 +155,62 @@ The website has a responsive layout when resizing the window.
 
 ### The Back-end (in `server/`)
 
-The Back-end of the project is running on [Render](https://render.com/) on the following url: 
+- The Back-end of the project is running on [Render](https://render.com/) on the following url: https://samplerserver.onrender.com/
 
-https://samplerserver.onrender.com/
+- The `json` files of the presets are stored in a database in [MongoDB](https://www.mongodb.com/).
 
 ### The `Sampler Preset Manager` Angular app (in `preset-manager/`)
 
+#### View the presets
 
+- On the home page (https://bence-dp.github.io/SamplerPresetManager/#/home) you can see the list of all presets.
+
+![Picture 17](.readme-src/img/17.png)
+
+#### Add a new preset
+
+- By clicking on the `Add Preset` button on the top right of the preset list, you are redirected to https://bence-dp.github.io/SamplerPresetManager/#/add
+
+![Picture 17](.readme-src/img/17.png)
+
+![Picture 18](.readme-src/img/18.png)
+
+- You can specify the name of the preset as well specify the type of the preset (which is "Drumkit" by default).
+
+- With the `+ Add Sample` button you can add up to 16 samples to the preset.
+
+![Picture 19](.readme-src/img/19.png)
+
+- For each new sample you can specify a name, and you can choose between specifying a url or uploading an audio file. 
+
+- Each sample can be removed using the trash icon on the right side.
+
+- Using the `Add Preset` button you can add the preset including the samples to the sampler.
+
+- To not add a new preset, you can go back to the home page by pressing the title `Sampler Preset Manager` on top of the screen.
+
+#### View the details of a preset and edit/delete a preset
+
+- By clicking on a preset from the Preset list on the home page, you are redirected to https://bence-dp.github.io/SamplerPresetManager/#/preset/name, where `name`is the name of the preset. You can access the details of any preset by specifying the name in the url. Example: https://bence-dp.github.io/SamplerPresetManager/#/preset/808
+
+- The details are displayed as followed:
+
+![Picture 20](.readme-src/img/20.png)
+
+- In order to edit or delete a preset you must toggle on the `Make Admin modifications` slider.
+
+![Picture 21](.readme-src/img/21.png)
+
+- To delete a preset you may click the `DELETE` button.
+
+- To edit a preset you may click the `EDIT` button. By click this button you are redirected to the `/edit` page. Example: https://bence-dp.github.io/SamplerPresetManager/#/preset/basic-kit/edit?nom=Basic%20Kit#edition 
+
+![Picture 22](.readme-src/img/22.png)
+
+![Picture 23](.readme-src/img/23.png)
+
+- You can now edit the name and type of the preset. You can also edit the name and url for each sample, as well as delete and add new samples. 
+
+- Using the `Save` button you can save your modifications.
+
+- You can go back to the home page by pressing the title `Sampler Preset Manager` on top of the screen.
