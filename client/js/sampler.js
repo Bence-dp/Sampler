@@ -26,15 +26,15 @@ class Sampler {
         this.padsElements = []; // Stocker les éléments DOM des pads
         this.keyPressed = new Set();
         
-        // Mapping clavier : rangées de bas en haut
+        // Mapping clavier AZERTY : rangées de bas en haut
         // Rangée du bas (samples 0-3): W X C V
         // Rangée 2 (samples 4-7): Q S D F
         // Rangée 3 (samples 8-11): A Z E R
         // Rangée 4 (samples 12-15): 1 2 3 4
         this.keyMap = {
-            'KeyW': 0, 'KeyX': 1, 'KeyC': 2, 'KeyV': 3,
-            'KeyQ': 4, 'KeyS': 5, 'KeyD': 6, 'KeyF': 7,
-            'KeyA': 8, 'KeyZ': 9, 'KeyE': 10, 'KeyR': 11,
+            'KeyZ': 0, 'KeyX': 1, 'KeyC': 2, 'KeyV': 3,      // W X C V sur AZERTY
+            'KeyA': 4, 'KeyS': 5, 'KeyD': 6, 'KeyF': 7,      // Q S D F sur AZERTY
+            'KeyQ': 8, 'KeyW': 9, 'KeyE': 10, 'KeyR': 11,    // A Z E R sur AZERTY
             'Digit1': 12, 'Digit2': 13, 'Digit3': 14, 'Digit4': 15
         };
         
