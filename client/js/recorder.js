@@ -215,13 +215,12 @@ export default class Recorder {
 		}
 
 		const folder = prompt('Dossier sur le serveur (ex: recordings) :') || 'recordings';
-		// Use the folder name as the preset name so the JSON file matches the folder
 		const presetName = folder;
 		const sampleBaseName = prompt('Nom du sample (sans extension) :') || 'recording';
 		const mime = this.lastBlob.type || 'audio/webm';
 		const extMatch = mime.match(/audio\/(.+)/);
 		const ext = extMatch ? extMatch[1].replace(/[^a-z0-9]/gi, '') : 'webm';
-		const filename = `${sampleBaseName.replace(/[^a-z0-9-_]/gi, '_')}-${Date.now()}.${ext}`;
+		const filename = `${sampleBaseName.replace(/[^a-z0-9-_]/gi, '_')}.${ext}`;
 
 		this.progressBar.style.display = 'block';
 		this.progressBar.value = 0;
