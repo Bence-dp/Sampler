@@ -13,6 +13,14 @@
     align-self: flex-start;
 }
 
+.sample-container {
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: black;
+}
+
 .sample-row {
     display: flex;
     gap: 10px;
@@ -22,6 +30,55 @@
 
 .sample-field {
     flex: 1;
+}
+
+.sample-field-full {
+  width: 100%;
+}
+
+.upload-mode-group {
+  display: flex;
+  gap: 12px;
+}
+
+.file-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: black;
+  border-radius: 4px;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-input-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #3f51b5;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.file-input-label:hover {
+  background-color: #303f9f;
+}
+
+.file-input-label mat-icon {
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #666;
 }
 
 h3 {

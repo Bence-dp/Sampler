@@ -15,20 +15,48 @@
         <h3>Samples ({{samples.length}}/16)</h3>
         
         @for (sample of samples; track $index; let i = $index) {
-            <div class="sample-row">
-                <mat-form-field class="sample-field">
-                    <mat-label>Sample Name</mat-label>
-                    <input matInput [(ngModel)]="sample.name" [name]="'sample-name-' + i" placeholder="kick, snare, etc.">
-                </mat-form-field>
+            <div class="sample-container">
+                <div class="sample-row">
+                    <mat-form-field class="sample-field">
+                        <mat-label>Sample Name</mat-label>
+                        <input matInput [(ngModel)]="sample.name" [name]="'sample-name-' + i" placeholder="kick, snare, etc.">
+                    </mat-form-field>
+                    
+                    <mat-radio-group [(ngModel)]="sample.uploadMode" [name]="'upload-mode-' + i" class="upload-mode-group">
+                        <mat-radio-button value="url">URL</mat-radio-button>
+                        <mat-radio-button value="file">File Upload</mat-radio-button>
+                    </mat-radio-group>
+                    
+                    <button mat-icon-button type="button" color="warn" (click)="removeSample(i)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </div>
                 
-                <mat-form-field class="sample-field">
-                    <mat-label>Sample URL</mat-label>
-                    <input matInput [(ngModel)]="sample.url" [name]="'sample-url-' + i" placeholder="https://www.example.com/file.wav">
-                </mat-form-field>
+                @if (sample.uploadMode === 'url') {
+                    <mat-form-field class="sample-field-full">
+                        <mat-label>Sample URL</mat-label>
+                        <input matInput [(ngModel)]="sample.url" [name]="'sample-url-' + i" placeholder="https://www.example.com/file.wav">
+                    </mat-form-field>
+                }
                 
-                <button mat-icon-button type="button" color="warn" (click)="removeSample(i)">
-                    <mat-icon>delete</mat-icon>
-                </button>
+                @if (sample.uploadMode === 'file') {
+                    <div class="file-upload-container">
+                        <input 
+                            type="file" 
+                            [id]="'file-input-' + i" 
+                            accept="audio/*,.wav,.mp3,.ogg,.webm"
+                            (change)="onFileSelected($event, i)"
+                            class="file-input"
+                        />
+                        <label [for]="'file-input-' + i" class="file-input-label">
+                            <mat-icon>upload_file</mat-icon>
+                            <span>{{ sample.file ? sample.file.name : 'Choose audio file (.wav, .mp3, .ogg)' }}</span>
+                        </label>
+                        @if (sample.file) {
+                            <span class="file-size">{{ (sample.file.size / 1024).toFixed(2) }} KB</span>
+                        }
+                    </div>
+                }
             </div>
         }
 

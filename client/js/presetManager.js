@@ -114,10 +114,14 @@ export class PresetManager {
 
         let urls = [];
         if (preset.samples && preset.samples.length > 0) {
-            urls = preset.samples.map(s => ({
-                url: `${this.apiBase}/presets/${s.url}`,
-                name: s.name || s.url
-            }));
+            urls = preset.samples.map(s => {
+                // Check if URL is absolute (starts with http:// or https://)
+                const isAbsoluteURL = s.url.startsWith('http://') || s.url.startsWith('https://');
+                return {
+                    url: isAbsoluteURL ? s.url : `${this.apiBase}/presets/${s.url}`,
+                    name: s.name || s.url
+                };
+            });
         }
 
         await this.sampler.loadAndShow(urls);

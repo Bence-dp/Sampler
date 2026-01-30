@@ -1,6 +1,8 @@
 export interface Sample {
     url: string;
     name: string;
+    file?: File;
+    uploadMode?: 'url' | 'file';
 }
 
 export interface Preset {

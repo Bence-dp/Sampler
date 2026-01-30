@@ -194,17 +194,48 @@ app.post("/api/upload/:folder", upload.array("files", 16), async (req, res, next
     const presetName = req.body && req.body.presetName ? String(req.body.presetName).trim() : null;
 
     if (presetName) {
-      // Build samples array for the preset
-      const samples = fileInfos.map(f => ({
-        url: `./${req.params.folder}/${f.storedName}`,
-        name: path.parse(f.storedName).name
-      }));
+      console.log('Request body:', req.body);
+      
+      // Parse sample names if provided
+      let sampleNames = [];
+      if (req.body.sampleNames) {
+        try {
+          sampleNames = JSON.parse(req.body.sampleNames);
+          console.log('Parsed sample names:', sampleNames);
+        } catch (e) {
+          console.error('Error parsing sampleNames:', e);
+        }
+      }
+      
+      // Build samples array for the preset from uploaded files
+      const fileSamples = fileInfos.map((f, index) => {
+        const customName = sampleNames[index];
+        console.log(`Sample ${index}: customName="${customName}", filename="${path.parse(f.storedName).name}"`);
+        return {
+          url: `./${req.params.folder}/${f.storedName}`,
+          name: customName || path.parse(f.storedName).name
+        };
+      });
+
+      // Add URL-based samples if provided
+      let urlSamples = [];
+      if (req.body.urlSamples) {
+        try {
+          urlSamples = JSON.parse(req.body.urlSamples);
+          console.log('Parsed URL samples:', urlSamples);
+        } catch (e) {
+          console.error('Error parsing urlSamples:', e);
+        }
+      }
+
+      const allSamples = [...fileSamples, ...urlSamples];
+      console.log('All samples to be saved:', allSamples);
 
       const preset = {
         name: presetName,
-        type: 'Recording',
+        type: req.body.presetType || 'Recording',
         isFactoryPresets: false,
-        samples
+        samples: allSamples
       };
 
       const errs = validatePreset(preset);
